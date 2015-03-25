@@ -1,9 +1,9 @@
-var graphics = getSelection(),
-  sourceArtboardSize = 1024,
-  percentageX = graphics.frame().x() / sourceArtboardSize,
-  percentageY = graphics.frame().y() / sourceArtboardSize;
+var graphics = getSelection();
+var sourceArtboardSize = 1024;
 
 if (graphics != null) {
+  var percentageX = graphics.frame().x() / sourceArtboardSize;
+  var percentageY = graphics.frame().y() / sourceArtboardSize;
   var groupName = graphics.name();
   NSApp.sendAction_to_from('copy:', null, sketch.doc);
 
@@ -15,23 +15,21 @@ if (graphics != null) {
     var offset = 2000;
 
     if (size < sourceArtboardSize) {
-
-      // This is a kluge.
-      // If you paste layers in a artboard and those layers are larger than
-      // the board and large enough to be "over" another artboard, the layers
-      // will be pasted to the wrong artboard. I know, weird.
-      // Because of that we'll move the artboard a safe distance on the x axis
-      // and then move it back to it's original place.
       f.addX(offset);
 
       board.select_byExpandingSelection(true, false);
       NSApp.sendAction_to_from('paste:', null, sketch.doc);
 
+      for (var i = 0; i < board.layers().count(); i++) {
+        var layer = board.layers().objectAtIndex(i);
+        board.removeLayer(layer);
+      }
+
       var l = board.layers();
       var newGroup = l.objectAtIndex(l.count() - 1);
 
-      var relativeSizeFactorWidth = newGroup.frame().width() / sourceArtboardSize,
-        relativeSizeFactorHeight = newGroup.frame().height() / sourceArtboardSize;
+      var relativeSizeFactorWidth = newGroup.frame().width() / sourceArtboardSize;
+      var relativeSizeFactorHeight = newGroup.frame().height() / sourceArtboardSize;
 
       newGroup.frame().width = size * relativeSizeFactorWidth;
       newGroup.frame().height = size * relativeSizeFactorHeight;
@@ -59,12 +57,10 @@ function getSelection () {
 
   if (s.count() == 0) {
     selectionError();
-  }
-  else {
+  } else {
     if (s[0].className() == 'MSLayerGroup') {
       el = s[0];
-    }
-    else {
+    } else {
       selectionError();
     }
   }
